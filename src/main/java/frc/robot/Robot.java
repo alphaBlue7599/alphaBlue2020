@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
@@ -19,7 +20,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
  * it contains the code necessary to operate a robot with tank drive.
  */
 public class Robot extends TimedRobot {
-  private Joystick m_alphaGamepad;
+  // private Joystick m_alphaGamepad; Made just in case for gamepad usage
+  private Joystick m_alphajoystick;
   private Double joystickYvalue;
   private Double joystickXvalue;
   private boolean squareInputs; // Boolean can only be true or false. (has to be lowercase)
@@ -35,6 +37,8 @@ public class Robot extends TimedRobot {
   private SpeedControllerGroup rightGroupSPX;
   private SpeedControllerGroup leftGroupSPX;
 
+private double startTime;
+
   @Override
   public void robotInit() {
     System.out.println("Robot is Initializing...");
@@ -44,9 +48,9 @@ public class Robot extends TimedRobot {
     rearLeftSPX = new Spark(3);
     leftGroupSPX = new SpeedControllerGroup(frontLeftSPX, rearLeftSPX);
     rightGroupSPX = new SpeedControllerGroup(frontRightSPX, rearRightSPX);
-    m_alphaGamepad = new Joystick(0);
+    m_alphajoystick = new Joystick(0);
     yAxisChannel = 1; // These numbers are ints, when we definite it, it's just 1
-    xAxisChannel = 5;
+    xAxisChannel = 0;
     squareInputs = true; // What type are squareInputs? Answer: Can be true or false. If we want to modify the senitivity, we say true or false
     m_alphaRobot = new DifferentialDrive(leftGroupSPX, rightGroupSPX);
 
@@ -56,21 +60,36 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     //super.autonomousInit();
+    startTime = Timer.getFPGATimestamp();
+
   }
 
   @Override
   public void autonomousPeriodic() {
+    double time = Timer.getFPGATimestamp();
+
+  if (time - startTime < 3) { 
+    frontRightSPX.set(0.6);
+    rearRightSPX.set(0.6);
+    frontLeftSPX.set(-0.6);
+    rearLeftSPX.set(-0.6);
+  } else {
+    frontRightSPX.set(0);
+    rearRightSPX.set(0);
+    frontLeftSPX.set(0);
+    rearLeftSPX.set(0);
+  }  
     super.autonomousPeriodic();
   }
 
   @Override
   public void teleopPeriodic() {
 
-    joystickYvalue = -m_alphaGamepad.getRawAxis(yAxisChannel);
+    joystickYvalue = -m_alphajoystick.getRawAxis(yAxisChannel);
     System.out.print("Joystick Y Value: ");
     System.out.println(joystickYvalue);
 
-    joystickXvalue = m_alphaGamepad.getRawAxis(xAxisChannel);
+    joystickXvalue = m_alphajoystick.getRawAxis(xAxisChannel);
     System.out.print("Joystick X Value: ");
     System.out.println(joystickXvalue);
 
