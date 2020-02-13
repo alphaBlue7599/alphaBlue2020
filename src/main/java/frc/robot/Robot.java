@@ -19,8 +19,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
  * This is a demo program showing the use of the RobotDrive class, specifically
  * it contains the code necessary to operate a robot with tank drive.
  */
-public class Robot extends TimedRobot {
-  // private Joystick m_alphaGamepad; Made just in case for gamepad usage
+  public class Robot extends TimedRobot {
+  private Joystick m_alphaGamepad; 
   private Joystick m_alphajoystick;
   private Double joystickYvalue;
   private Double joystickXvalue;
@@ -30,6 +30,7 @@ public class Robot extends TimedRobot {
   
   private DifferentialDrive m_alphaRobot;
 
+  // Sparks used to control drivetrain
   private Spark frontRightSPX;
   private Spark rearRightSPX;
   private Spark frontLeftSPX;
@@ -37,22 +38,30 @@ public class Robot extends TimedRobot {
   private SpeedControllerGroup rightGroupSPX;
   private SpeedControllerGroup leftGroupSPX;
 
-private double startTime;
+  // Sparks used to control intake and shooter
+  private Spark inTakeSPX;
+  private Spark flyWheelSPX;
+
+  private double startTime;
 
   @Override
   public void robotInit() {
     System.out.println("Robot is Initializing...");
-    frontRightSPX = new Spark(0);
+    frontRightSPX = new Spark(0);// For movement
     rearRightSPX = new Spark(1);
     frontLeftSPX = new Spark(2);
     rearLeftSPX = new Spark(3);
     leftGroupSPX = new SpeedControllerGroup(frontLeftSPX, rearLeftSPX);
     rightGroupSPX = new SpeedControllerGroup(frontRightSPX, rearRightSPX);
     m_alphajoystick = new Joystick(0);
-    yAxisChannel = 1; // These numbers are ints, when we definite it, it's just 1
+    m_alphaGamepad = new Joystick(1);
+    yAxisChannel = 1; // These numbers are ints, when we definite it, it's just 1. It's 1 because it's for the joystick input.
     xAxisChannel = 0;
     squareInputs = true; // What type are squareInputs? Answer: Can be true or false. If we want to modify the senitivity, we say true or false
     m_alphaRobot = new DifferentialDrive(leftGroupSPX, rightGroupSPX);
+
+    inTakeSPX = new Spark(4);
+    flyWheelSPX = new Spark(5);
 
     System.out.println("!!! AlphaBlue Robot READY !!!");
    }
@@ -94,5 +103,30 @@ private double startTime;
     System.out.println(joystickXvalue);
 
     m_alphaRobot.arcadeDrive(joystickYvalue, joystickXvalue, squareInputs);
+
+    actuateIntake();
+    
+    actuateFlywheel();
+  }
+
+  public void actuateIntake() {
+  
+  if(m_alphaGamepad.getRawButtonPressed(6)) {
+    inTakeSPX.set(1.0);
+   } else if(m_alphaGamepad.getRawButtonReleased(6)) {
+     inTakeSPX.set(0);
+     // Left bumper button
+   }
+  }
+
+  public void actuateFlywheel() {
+
+  if(m_alphaGamepad.getRawButtonPressed(5)) {
+    flyWheelSPX.set(1.0);
+   } else if(m_alphaGamepad.getRawButtonReleased(5)) {
+    flyWheelSPX.set(0);
+    // right bumper button
+   }
+
   }
 }
