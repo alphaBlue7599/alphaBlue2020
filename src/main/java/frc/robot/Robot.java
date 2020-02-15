@@ -13,6 +13,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+// import edu.wpi.first.wpilibj.GyroBase; Need the sensor, order it?
+// import edu.wpi.first.wpilibj.Encoder; Tracks rotation
 
 // Getting the arcade drive in, assign gamepad values (eletric)
 /**
@@ -42,6 +46,11 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
   private Spark inTakeSPX;
   private Spark flyWheelSPX;
 
+  // DoubleSolniod
+  private DoubleSolenoid actuateDoubleSolenoid;
+  private Compressor c;
+  
+
   private double startTime;
 
   @Override
@@ -62,6 +71,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
     inTakeSPX = new Spark(4);
     flyWheelSPX = new Spark(5);
+    actuateDoubleSolenoid = new DoubleSolenoid(0, 1);
+    c = new Compressor(0);
 
     System.out.println("!!! AlphaBlue Robot READY !!!");
    }
@@ -75,7 +86,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
   @Override
   public void autonomousPeriodic() {
-    double time = Timer.getFPGATimestamp();
+    final double time = Timer.getFPGATimestamp();
 
   if (time - startTime < 3) { 
     frontRightSPX.set(0.6);
@@ -107,9 +118,13 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
     actuateIntake();
     
     actuateFlywheel();
+
+    actuateOutTake();
+
+    actuateDoubleSolenoid();
   }
 
-  public void actuateIntake() {
+  public void actuateIntake() { // Controls PWM for inTake clockwise 
   
   if(m_alphaGamepad.getRawButtonPressed(6)) {
     inTakeSPX.set(1.0);
@@ -119,7 +134,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
    }
   }
 
-  public void actuateFlywheel() {
+  public void actuateFlywheel() { // Controls PWM for shooter
 
   if(m_alphaGamepad.getRawButtonPressed(5)) {
     flyWheelSPX.set(1.0);
@@ -128,5 +143,23 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
     // right bumper button
    }
 
+  }
+
+  public void actuateOutTake() { // This will rotate PWM counter-clockwise
+
+    if(m_alphaGamepad.getRawButtonPressed(1)) {
+      inTakeSPX.set(-1.0);
+    } else if (m_alphaGamepad.getRawButtonReleased(1)) {
+      inTakeSPX.set(0);
+    }
+  }
+
+  public void actuateDoubleSolenoid() {
+
+    if(m_alphaGamepad.getRawButtonPressed(2)) {
+      actuateDoubleSolenoid.set(DoubleSolenoid.Value.kForward); 
+    } else if (m_alphaGamepad.getRawButtonPressed(3)) {
+      actuateDoubleSolenoid.set(DoubleSolenoid.Value.kReverse);
+    }
   }
 }
