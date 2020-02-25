@@ -7,16 +7,21 @@
 
 package frc.robot;
 
+//import java.io.*;
+//import java.nio.file.Path;
+
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+//import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-// import edu.wpi.first.wpilibj.GyroBase; Need the sensor, order it?
-// import edu.wpi.first.wpilibj.Encoder; Tracks rotation
 
 // Getting the arcade drive in, assign gamepad values (eletric)
 /**
@@ -48,8 +53,11 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 
   // DoubleSolniod
   private DoubleSolenoid actuateDoubleSolenoid;
-  private Compressor c;
+ // FOR LATER USE, DO NOT FORGET private Compressor m_Compressor;
   
+ private UsbCamera camera1;
+ private UsbCamera camera2;
+ private NetworkTableEntry cameraSelection;
 
   private double startTime;
 
@@ -72,8 +80,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
     inTakeSPX = new Spark(4);
     flyWheelSPX = new Spark(5);
     actuateDoubleSolenoid = new DoubleSolenoid(0, 1);
-    c = new Compressor(0);
+    // FOR LATER USE m_Compressor = new Compressor(0)
+    
+    camera1 = CameraServer.getInstance().startAutomaticCapture(0);
+    camera2 = CameraServer.getInstance().startAutomaticCapture(1);
+    //CvSink cvSink = CameraServer.getInstance().getVideo();
+    //CvSource outputStream = CameraServer.getInstance().putVideo("Blur", 640, 480);
 
+    cameraSelection = NetworkTableInstance.getDefault().getTable("").getEntry("CameraSelection");
     System.out.println("!!! AlphaBlue Robot READY !!!");
    }
 
@@ -81,29 +95,39 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
   public void autonomousInit() {
     //super.autonomousInit();
     startTime = Timer.getFPGATimestamp();
+   // String trajectoryJSON = "paths/YourPath.wpilib.json";
+   // try {
+    //  Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+     // Trajectory trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+   // } catch (IOException ex) {
+   //   DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
+    }
 
-  }
+  //}
 
   @Override
   public void autonomousPeriodic() {
     final double time = Timer.getFPGATimestamp();
-
-  if (time - startTime < 3) { 
-    frontRightSPX.set(0.6);
-    rearRightSPX.set(0.6);
-    frontLeftSPX.set(-0.6);
-    rearLeftSPX.set(-0.6);
+    
+  if (time - startTime < 1) { 
+    frontRightSPX.set(-0.6);
+    rearRightSPX.set(-0.6);
+    frontLeftSPX.set(0.6);
+    rearLeftSPX.set(0.6);
   } else {
-    frontRightSPX.set(0);
-    rearRightSPX.set(0);
-    frontLeftSPX.set(0);
-    rearLeftSPX.set(0);
+    //frontRightSPX.set(0);
+   // rearRightSPX.set(0);
+   // frontLeftSPX.set(0);
+    //rearLeftSPX.set(0);
+    disabledPeriodic();
   }  
     super.autonomousPeriodic();
   }
 
   @Override
   public void teleopPeriodic() {
+    // turn on compressor
+    // m_Compressor.setClosedLoopControl(true);
 
     joystickYvalue = -m_alphajoystick.getRawAxis(yAxisChannel);
     System.out.print("Joystick Y Value: ");
@@ -115,13 +139,21 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 
     m_alphaRobot.arcadeDrive(joystickYvalue, joystickXvalue, squareInputs);
 
-    actuateIntake();
+   // if (m_alphajoystick.getTriggerPressed()) {
+     // System.out.println("Setting camera 2");
+     // cameraSelection.setString(camera2.getName());
+   // } else if (m_alphajoystick.getTriggerPressed()) {
+    //  System.out.println("Setting camera 1");
+    //  cameraSelection.setString(camera1.getName());
+   //}
+
+    //actuateIntake();
     
-    actuateFlywheel();
+    //actuateFlywheel();
 
-    actuateOutTake();
+    //actuateOutTake();
 
-    actuateDoubleSolenoid();
+    //actuateDoubleSolenoid();
   }
 
   public void actuateIntake() { // Controls PWM for inTake clockwise 
