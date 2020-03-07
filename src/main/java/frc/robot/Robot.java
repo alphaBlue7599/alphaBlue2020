@@ -7,6 +7,9 @@
 
 package frc.robot;
 
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+
 //import java.io.*;
 //import java.nio.file.Path;
 
@@ -14,8 +17,9 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-//import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
@@ -53,11 +57,13 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
   // DoubleSolniod
   private DoubleSolenoid actuateDoubleSolenoid;
- // FOR LATER USE, DO NOT FORGET private Compressor m_Compressor;
+  private Compressor m_Compressor;
   
  private UsbCamera camera1;
  private UsbCamera camera2;
  private NetworkTableEntry cameraSelection;
+ private Encoder encoderRight;
+ private Encoder encoderLeft;
 
   private double startTime;
 
@@ -80,12 +86,18 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
     inTakeSPX = new Spark(4);
     flyWheelSPX = new Spark(5);
     actuateDoubleSolenoid = new DoubleSolenoid(0, 1);
-    // FOR LATER USE m_Compressor = new Compressor(0)
-    
-    camera1 = CameraServer.getInstance().startAutomaticCapture(0);
-    camera2 = CameraServer.getInstance().startAutomaticCapture(1);
-    //CvSink cvSink = CameraServer.getInstance().getVideo();
-    //CvSource outputStream = CameraServer.getInstance().putVideo("Blur", 640, 480);
+    //m_Compressor = new Compressor(0);
+
+    Encoder encoderRight = new Encoder(0, 1, false, Encoder.EncodingType.k2X);
+    Encoder encoderLeft = new Encoder(2, 3, false, Encoder.EncodingType.k2X);
+    // Extra encoder configureation 
+    //Wheel Diameter = 6in and Ecoder PPR = 1000 C = PI*D
+    encoderRight.setDistancePerPulse(18.84/1000);
+    encoderLeft.setDistancePerPulse(18.84/1000);
+   // camera1 = CameraServer.getInstance().startAutomaticCapture(0);
+   // camera2 = CameraServer.getInstance().startAutomaticCapture(1);
+   // CvSink cvSink = CameraServer.getInstance().getVideo();
+   // CvSource outputStream = CameraServer.getInstance().putVideo("Blur", 640, 480);
 
     cameraSelection = NetworkTableInstance.getDefault().getTable("").getEntry("CameraSelection");
     System.out.println("!!! AlphaBlue Robot READY !!!");
@@ -116,8 +128,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
     rearLeftSPX.set(0.6);
   } else {
     //frontRightSPX.set(0);
-   // rearRightSPX.set(0);
-   // frontLeftSPX.set(0);
+    //rearRightSPX.set(0);
+    //frontLeftSPX.set(0);
     //rearLeftSPX.set(0);
     disabledPeriodic();
   }  
@@ -126,7 +138,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
   @Override
   public void teleopPeriodic() {
-    // turn on compressor
+     // turn on compressor
     // m_Compressor.setClosedLoopControl(true);
 
     joystickYvalue = -m_alphajoystick.getRawAxis(yAxisChannel);
@@ -138,7 +150,9 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
     System.out.println(joystickXvalue);
 
     m_alphaRobot.arcadeDrive(joystickYvalue, joystickXvalue, squareInputs);
-
+    
+    System.out.print("Total distance: ");
+    System.out.println(encoderRight.getDistance());
    // if (m_alphajoystick.getTriggerPressed()) {
      // System.out.println("Setting camera 2");
      // cameraSelection.setString(camera2.getName());
@@ -149,11 +163,12 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
     //actuateIntake();
     
-    //actuateFlywheel();
+   // actuateFlywheel();
 
-    //actuateOutTake();
+   // actuateOutTake();
 
-    //actuateDoubleSolenoid();
+   // actuateDoubleSolenoid();
+
   }
 
   public void actuateIntake() { // Controls PWM for inTake clockwise 
